@@ -7,28 +7,35 @@ spiel_name = "Worrier of " + spiel_ort
 
 import random
 import sys
+import karten_decks
 
 
 # Kartendecks
 Strategiekarten = ["Heiltrank", "Liebestrank", "Verwirrung", "Bekehrung", "Blinder Zorn", "Panische Angst", "Paranoia", "Giftregen", "Steinwurf", "Alte Rüstung", "Strohmann", "Schleifeisen", "Rauchbombe (Dieb)", "Axtwurf (Babar)", "Überzeugungszwang (Mönch)", "Knappe (Ritter)", "Ausgiebiges Frühstück (Abenteurer)"]
 Waffenkarten_tier1 = ["Rostige Klinge", "Nagelholz", "Steinschleuder", "Holzschild", "Holzspeer"]
 Monsterkarten_tier1 = ["Sturer Stier", "Wellenreitende Wasserschildkröte", "Bärtiger Bär", "Würdiger Wolf", "Harmloser Hai", "Wüttender Widder", "Wildes Wildschwein", "Schlängelnede Schlange", "Eilige Echse", "Horde Halblinge"]
+# karten_decks.py importieren
+strat_dict = karten_decks.strategie_karten
+waffen_dict = karten_decks.waffen_karten_tier1
+monster_dict = karten_decks.monster_karten_tier1
+
 
 
 
 class Krieger:
-    def __init__ (self, name, angriff, leben, gewandtheit, reiten, charisma, inventar = [], gesehene_monster = [], besiegte_monster = []):
+    def __init__ (self, name, angriff, leben, gewandtheit, reiten, charisma, rüstung, inventar = [], gesehene_monster = [], besiegte_monster = []):
         self.name = name
         self.angriff = angriff
         self.leben = leben
         self.gewandtheit = gewandtheit
         self.reiten = reiten
         self.charisma = charisma
+        self.rüstung = rüstung
         self.inventar = inventar
         self.gesehene_monster = gesehene_monster
         self.besiegte_monster = besiegte_monster
     def __str__(self):
-        return "Information zum Spieler: " + self.name + ", Angriff = " + str(self.angriff) + " , Leben = " + str(self.leben) + " , Gewandtheit = " + str(self.gewandtheit) + " , Reiten = " + str(self.reiten) + " , Charisma " + str(self.charisma)
+        return "Information zum Spieler: " + self.name + ", Angriff = " + str(self.angriff) + " , Leben = " + str(self.leben) + " , Gewandtheit = " + str(self.gewandtheit) + " , Reiten = " + str(self.reiten) + " , Charisma " + str(self.charisma) + " , Rüstung = " + str(self.rüstung)
     def show_inventar(self):
         print("Inventar von " + self.name + ":")
         for i in self.inventar:
@@ -90,16 +97,18 @@ def stats_initial(name):
         print("Du hattest Glück und beginnst das Spiel mit Charisma.")
         print("Charisma: " + str(charisma))
     # Krieger erstellen
-    return Krieger(name, angriff, leben, gewandtheit, reiten, charisma)
+    rüstung = 0 # bei default immer 0
+    return Krieger(name, angriff, leben, gewandtheit, reiten, charisma, rüstung, inventar = [], gesehene_monster = [], besiegte_monster = [])
 
 
 
 ### Spielrunde
 def schatzkarte_ziehen(spieler):
     würfel1 = random.randint(1,6)
+    print(spieler.name)
     if würfel1 == 6:
         # eine zufällige Karte aus dem Waffenkarten Deck ziehen
-        würfel2 = random.randint(1,5)
+        würfel2 = random.randint(0,4)
         print("Du hast eine Waffenkarte gezogen: " + Waffenkarten_tier1[würfel2])
         spieler.inventar.append(Waffenkarten_tier1[würfel2])
     else:
@@ -107,6 +116,24 @@ def schatzkarte_ziehen(spieler):
         würfel2 = random.randint(0,15)
         print("Du hast eine Strategiekarte gezogen: " + Strategiekarten[würfel2])
         spieler.inventar.append(Strategiekarten[würfel2])
+
+def item_karte_info(item):
+    # die Werte der Karte auslesen durch das Dictionary
+    if item in strat_dict:
+        # print(strat_dict[item])
+        # gebe den Name der Karte aus
+        print("Name: " + strat_dict[item]["name"] + ", Typ: " + strat_dict[item]["typ"] + ", Klasse: " + str(strat_dict[item]["klasse"]) + ", Effekt: " + str(strat_dict[item]["effekt"]))
+    elif item in waffen_dict:
+        # print(waffen_dict[item])
+        print("Name: " + waffen_dict[item]["name"] + ", Typ: " + waffen_dict[item]["typ"] + ", Klasse: " + str(waffen_dict[item]["klasse"]) + ", Effekt: " + str(waffen_dict[item]["effekt"]) + ", Platz: " + str(waffen_dict[item]["platz"]) + ", Angriffsstats: " + str(waffen_dict[item]["stats"]))
+
+
+def monster_karte_info(monster):
+    # die Werte der Karte auslesen durch das Dictionary
+    if monster_dict[monster]["reiten"]["reiten"] == True:
+        print("Name: " + monster_dict[monster]["name"] + ", Tier: " + str(monster_dict[monster]["tier"]) + ", Leben: " + str(monster_dict[monster]["leben"]) + ", Gewandtheit: " + str(monster_dict[monster]["gewandtheit"]) + ", Angriffsstats: " + str(monster_dict[monster]["angriff"]) + "\n Belohnung wenn du das Monster besiegt hast: " + str(monster_dict[monster]["belohnung"]) + " Schatzkarten. \n Du kannst das Monster reiten: " + str(monster_dict[monster]["reiten"]["reiten"]) + ", wenn du den Reitwert oder mehr hast!")
+    else:
+        print("Name: " + monster_dict[monster]["name"] + ", Tier: " + str(monster_dict[monster]["tier"]) + ", Leben: " + str(monster_dict[monster]["leben"]) + ", Gewandtheit: " + str(monster_dict[monster]["gewandtheit"]) + ", Angriffsstats: " + str(monster_dict[monster]["angriff"]) + "\n Belohnung wenn du das Monster besiegt hast: " + str(monster_dict[monster]["belohnung"]) + " Schatzkarten.")
 
 
 def monsterkarte_ziehen(spieler):
@@ -120,6 +147,7 @@ def kampf(spieler):
     # Kampf
     print(input("Du gerätst in ein Kampf, ein Monster ! " + spieler.gesehene_monster[-1]))
     # nutze dein inventar
+    print(monster_karte_info(spieler.gesehene_monster[-1]))
     spieler.show_inventar()
     # nenne alle Schatzkarten die du verwenden möchtest
     print("Nenne die Nummern der Schatzkarten die du verwenden möchtest.")
@@ -138,7 +166,13 @@ def kampf(spieler):
     # lösche die Schatzkarten aus dem Inventar
     for i in schatzkarten:
         spieler.inventar.remove(i)
-
+    # hast du das Monster besiegt?
+    if input("Hat der Spieler das Monster besiegt? (j/n) ") == "j":
+        spieler.besiegte_monster.append(spieler.gesehene_monster[-1])
+        print("Du hast das Monster besiegt! Weiter so!.")
+        anzahl_zu_ziehende_karten = monster_dict[spieler.gesehene_monster[-1]]["belohnung"]
+        for i in range(anzahl_zu_ziehende_karten):
+            schatzkarte_ziehen(spieler)
 
 
 
@@ -157,7 +191,7 @@ if __name__ == "__main__":
         f.write("\n")
         f.write(f'## Start ##\n')
     print("Willkommen in " + spiel_ort + " edle Krieger!")
-    print("Befor ihr euch in den Wettstreit um den Thron begebt, müsst ihr euch noch ein wenig vorbereiten.")
+    print("Bevor ihr euch in den Wettstreit um den Thron begebt, müsst ihr euch noch ein wenig vorbereiten.")
     print("Seit ihr bereit für eure Eigenschaften?")
     print("Dann lasst uns beginnen!")
     print(input("Drücke Enter um zu beginnen."))
@@ -188,6 +222,9 @@ if __name__ == "__main__":
             inventar_sehen = input("Willst du dein Inventar sehen? (j/n) ")
             if inventar_sehen == "j":
                 spieler[i].show_inventar()
+                for item in spieler[i].inventar:
+                    item_karte_info(item)
+
             print(input("---"))
             
             ## Monsterkarte ziehen
